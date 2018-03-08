@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+       xmlns:mvc="http://www.springframework.org/schema/mvc"  
+       xmlns:p="http://www.springframework.org/schema/p"  
+       xmlns:context="http://www.springframework.org/schema/context"  
+       xmlns:aop="http://www.springframework.org/schema/aop"  
+       xmlns:tx="http://www.springframework.org/schema/tx"  
+       xsi:schemaLocation="http://www.springframework.org/schema/beans  
+            http://www.springframework.org/schema/beans/spring-beans.xsd  
+            http://www.springframework.org/schema/context   
+            http://www.springframework.org/schema/context/spring-context.xsd  
+            http://www.springframework.org/schema/aop   
+            http://www.springframework.org/schema/aop/spring-aop.xsd  
+            http://www.springframework.org/schema/tx   
+            http://www.springframework.org/schema/tx/spring-tx.xsd  
+            http://www.springframework.org/schema/mvc   
+            http://www.springframework.org/schema/mvc/spring-mvc.xsd  
+            http://www.springframework.org/schema/context   
+            http://www.springframework.org/schema/context/spring-context.xsd">  
+              
+    <!-- 配置静态资源，直接映射到对应的文件夹，不被DispatcherServlet处理 -->  
+    <mvc:resources mapping="/images/**" location="/images/"/>  
+    <mvc:resources mapping="/css/**" location="/css/"/>  
+    <mvc:resources mapping="/js/**" location="/js/"/>  
+    <mvc:resources mapping="/html/**" location="/html/"/>  
+    <mvc:resources mapping="/common/**" location="/common/"/>  
+    <mvc:resources mapping="/fonts/**" location="/fonts/"/>  
+    <!-- Configures the @Controller programming model -->  
+    <mvc:annotation-driven /> 
+    
+    <context:annotation-config/>
+      
+    <!--  mvc:default-servlet-handler/> -->
+   
+     
+    <!--扫描web包，应用Spring的注释-->  
+    <context:component-scan base-package="main.java.com"/>
+    <context:component-scan base-package="test"/>  
+    <!-- 配置验证-->  
+    <bean id="captchaProducer" class="com.google.code.kaptcha.impl.DefaultKaptcha">  
+        <property name="config">  
+            <bean class="com.google.code.kaptcha.util.Config">  
+                <constructor-arg>  
+                    <props>  
+                        <prop key="kaptcha.border">yes</prop>  
+                        <prop key="kaptcha.border.color">105,179,90</prop>  
+                        <prop key="kaptcha.textproducer.font.color">blue</prop>  
+                        <prop key="kaptcha.image.width">125</prop>  
+                        <prop key="kaptcha.image.height">45</prop>  
+                        <prop key="kaptcha.textproducer.font.size">45</prop>  
+                        <prop key="kaptcha.session.key">code</prop>  
+                        <prop key="kaptcha.textproducer.char.length">4</prop>  
+                        <prop key="kaptcha.textproducer.font.names">宋体,楷体,微软雅黑</prop>  
+                    </props>  
+                </constructor-arg>  
+            </bean>  
+        </property>  
+    </bean>
+     
+    <!-- 配置json  html  xml  类型的视�?的ContentNegotiatingViewResolver方式 -->
+    <bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+      	<property name="order" value="1"></property>
+      	<property name="favorPathExtension" value="false"/>
+      	<property name="favorParameter" value="true"/>
+      	<property name="ignoreAcceptHeader" value="false"/>
+      	<property name="mediaTypes">
+            <map>
+                <entry key="json" value="application/json" />
+                <entry key="xml" value="application/xml" />        
+            </map>
+        </property>
+        <property name="defaultViews">
+            <list>
+            <!--json视图-->
+                <bean class="org.springframework.web.servlet.view.json.MappingJackson2JsonView"></bean>
+            <!--xml视图-->
+                <bean class="org.springframework.web.servlet.view.xml.MarshallingView">
+                    <constructor-arg>
+                        <bean class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+                            <property name="classesToBeBound">
+                                <list>
+                                    <value>main.java.com.core.model.Developer</value>
+                                </list>
+                            </property>
+                        </bean>
+                    </constructor-arg>
+                </bean>
+            </list>
+        </property>
+    </bean> 
+     
+    
+     
+     <!-- 统一异常处理 -->
+     <bean id="exceptionResolver" class="main.java.com.core.exception.handler.CustomSimpleMappingExceptionResolver">  
+      <property name="exceptionMappings">   
+        <props>   
+          <prop key="main.java.com.core.exception.SystemException">error/500</prop>   
+          <prop key="main.java.com.core.exception.BusinessException">error/errorpage</prop>  
+          <prop key="java.lang.exception">error/500</prop>  
+            
+       </props>   
+     </property>   
+    </bean>  
+      
+    <!--启动Spring MVC的注解设置编码方式，防止乱码-->  
+    <bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter">  
+      <property name="messageConverters">     
+         <list>     
+             <bean class = "org.springframework.http.converter.StringHttpMessageConverter">     
+                <property name = "supportedMediaTypes">  
+                      <list>  
+                          <value>text/html;charset=UTF-8</value>     
+                     </list>     
+                </property>     
+             </bean>     
+         </list>     
+      </property>   
+    </bean>  
+    <!--对模型视图名称的解析，即在模型视图名称添加前后缀InternalResourceViewResolver-->  
+    <!--默认的就是JstlView所以这里就不用配置viewClass -->  
+    <bean id="viewResolver"  class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+    	p:order ="2"   
+        p:prefix="/WEB-INF/views/"   
+        p:suffix=".jsp"
+        p:contentType="text/html;charset=GBK"
+        p:viewClass="org.springframework.web.servlet.view.JstlView" />  
+    
+    <!-- 支持上传文件 -->  
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/> 
+    <!-- 登录拦截器-->
+	<mvc:interceptors>
+ 		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+				<mvc:exclude-mapping path="/common/**" />
+				<mvc:exclude-mapping path="/kaptcha/**" />
+ 				<mvc:exclude-mapping path="/js/**" />
+				<mvc:exclude-mapping path="/script/**" />
+ 				<mvc:exclude-mapping path="/css/**" />
+ 				<mvc:exclude-mapping path="/img/**" />
+ 				<bean class="main.java.com.core.interceptor.AutoLoginInterceptor" />		
+		</mvc:interceptor>
+ 	</mvc:interceptors>
+</beans>  
