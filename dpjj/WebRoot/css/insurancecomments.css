@@ -1,0 +1,7 @@
+.rating-items {
+	height:45vh;
+	overflow:auto;
+	overflow-x:hidden;
+	border-style: ridge;
+    border-width: 8px;
+}

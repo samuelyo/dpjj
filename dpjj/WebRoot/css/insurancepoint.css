@@ -1,0 +1,8 @@
+.rating-items {
+	padding:15px;
+	height:58vh;
+	overflow:auto;
+	overflow-x:hidden;
+	border-style: ridge;
+    border-width: 8px;
+}
